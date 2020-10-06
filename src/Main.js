@@ -38,6 +38,12 @@ CM.ReplaceNative = function() {
 	Game.UpdateSpecial = function() {
 		CM.Disp.FixMouseY(CM.Backup.UpdateSpecial);
 	}
+	
+	CM.Backup.DescribeDragonAura = Game.DescribeDragonAura;
+	Game.DescribeDragonAura = function(aura) {
+		CM.Backup.DescribeDragonAura(aura);
+		CM.Disp.DescribeDragonAura(aura);
+	}
 
 	// Assumes newer browsers
 	l('bigCookie').removeEventListener('click', Game.ClickCookie, false);
@@ -299,6 +305,6 @@ CM.ConfigDefault = {
 };
 CM.ConfigPrefix = 'CMConfig';
 
-CM.VersionMajor = '2.021';
-CM.VersionMinor = '2';
+CM.VersionMajor = '2.029';
+CM.VersionMinor = '1';
 
