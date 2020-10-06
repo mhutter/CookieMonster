@@ -38,6 +38,12 @@ CM.ReplaceNative = function() {
 	Game.UpdateSpecial = function() {
 		CM.Disp.FixMouseY(CM.Backup.UpdateSpecial);
 	}
+	
+	CM.Backup.DescribeDragonAura = Game.DescribeDragonAura;
+	Game.DescribeDragonAura = function(aura) {
+		CM.Backup.DescribeDragonAura(aura);
+		CM.Disp.DescribeDragonAura(aura);
+	}
 
 	// Assumes newer browsers
 	l('bigCookie').removeEventListener('click', Game.ClickCookie, false);
