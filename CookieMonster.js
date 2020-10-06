@@ -402,6 +402,11 @@ CM.Cache.ClicksDiff;
 CM.Cache.AvgCPS = -1;
 CM.Cache.AvgCPSChoEgg = -1;
 CM.Cache.AvgClicks = -1;
+CM.Cache.HighestBuilding = -1;
+CM.Cache.MinAura = 0;
+CM.Cache.MaxAura = 0;
+CM.Cache.MinAura2 = 0;
+CM.Cache.MaxAura2 = 0;
 
 /**********
  * Config *
@@ -619,7 +624,7 @@ CM.Data.Fortunes = [
 CM.Data.HalloCookies = ['Skull cookies', 'Ghost cookies', 'Bat cookies', 'Slime cookies', 'Pumpkin cookies', 'Eyeball cookies', 'Spider cookies'];
 CM.Data.ChristCookies = ['Christmas tree biscuits', 'Snowflake biscuits', 'Snowman biscuits', 'Holly biscuits', 'Candy cane biscuits', 'Bell biscuits', 'Present biscuits'];
 CM.Data.ValCookies = ['Pure heart biscuits', 'Ardent heart biscuits', 'Sour heart biscuits', 'Weeping heart biscuits', 'Golden heart biscuits', 'Eternal heart biscuits'];
-
+CM.Data.CalculableAuras = ['No aura', 'Breath of Milk', 'Elder Battalion', 'Dragon God', 'Radiant Appetite'];
 /********
  * Disp *
  ********/
@@ -2672,6 +2677,71 @@ CM.Disp.RefreshScale = function() {
 	CM.Disp.UpdateUpgrades();
 }
 
+CM.Disp.GetAuraColor = function(aura) {
+    var borderColor = CM.Disp.colorGray;
+    
+    var delta = CM.Cache.Auras[aura];
+    
+    if (/*aura == Game.dragonAura || */!CM.Data.CalculableAuras.includes(Game.dragonAuras[aura].name)) {
+        borderColor = CM.Disp.colorGray;
+    } else if (delta == CM.Cache.MaxAura) {
+        borderColor = CM.Disp.colorBlue;
+    } else if (delta == CM.Cache.MinAura) {
+        borderColor = CM.Disp.colorPurple;
+    } else if (delta > 0) {
+        borderColor = CM.Disp.colorGreen;
+    } else if (delta < 0) {
+        borderColor = CM.Disp.colorRed;
+    }
+    
+    return borderColor;
+}
+
+CM.Disp.CreateAuraInfo = function(aura) {
+    var auraInfo = document.createElement("div");
+    auraInfo.id = "CMAuraInfo";
+
+    var auraBorder = document.createElement("div");
+    auraBorder.style.border = "1px solid";
+    auraBorder.style.padding = "4px";
+    auraBorder.style.margin = "6px";
+    auraBorder.id = "CMAuraBorder";
+    auraBorder.className = CM.Disp.colorTextPre + CM.Disp.GetAuraColor(aura);
+	auraInfo.appendChild(auraBorder);
+	
+	var changeTitle = document.createElement("div");
+	changeTitle.style.fontWeight = "bold";
+	changeTitle.className = "CMTextBlue";
+	changeTitle.innerText = "Change in Income";
+	auraBorder.appendChild(changeTitle);
+	
+	var changeValue = document.createElement("div");
+	changeValue.id = "CMAuraIncome";
+	changeValue.innerText = Beautify(CM.Cache.Auras[aura]);
+	auraBorder.appendChild(changeValue);
+	
+	return auraInfo;
+}
+
+CM.Disp.DescribeDragonAura = function(aura) {
+    CM.Sim.CalculateAuras();
+	var auraInfo = l("dragonAuraInfo");
+	auraInfo.firstElementChild.appendChild(CM.Disp.CreateAuraInfo(aura));
+	
+	var auraList = auraInfo.nextElementSibling;
+    for (var i in auraList.children) {
+        var crate = auraList.children[i];
+        if (crate && crate.children && crate.children.length == 0) {
+            var colorDiv = document.createElement("div");
+            colorDiv.className = CM.Disp.colorBackPre + CM.Disp.GetAuraColor(i);
+            colorDiv.style.height = "10px";
+            colorDiv.style.width = "10px";
+
+            auraList.children[i].appendChild(colorDiv);
+        }
+    }
+}
+
 CM.Disp.colorTextPre = 'CMText';
 CM.Disp.colorBackPre = 'CMBack';
 CM.Disp.colorBorderPre = 'CMBorder';
@@ -2755,6 +2825,12 @@ CM.ReplaceNative = function() {
 	CM.Backup.UpdateSpecial = Game.UpdateSpecial;
 	Game.UpdateSpecial = function() {
 		CM.Disp.FixMouseY(CM.Backup.UpdateSpecial);
+	}
+	
+	CM.Backup.DescribeDragonAura = Game.DescribeDragonAura;
+	Game.DescribeDragonAura = function(aura) {
+		CM.Backup.DescribeDragonAura(aura);
+		CM.Disp.DescribeDragonAura(aura);
 	}
 
 	// Assumes newer browsers
@@ -3544,6 +3620,90 @@ CM.Sim.BuyUpgrades = function() {
 			CM.Cache.Upgrades[i].bonus = CM.Sim.cookiesPs - Game.cookiesPs;
 		}
 	}
+}
+
+CM.Sim.CalculateHighest = function() {
+    var highest = -1;
+    for (var i in CM.Sim.Objects) {
+        if (CM.Sim.Objects[i].amount > 0) {
+            highest = i;
+        }
+    }
+    CM.Cache.HighestBuilding = highest;
+}
+
+CM.Sim.ChangeAura = function(aura) {
+    // Changing to the current aura costs nothing and does nothing
+    if (aura != CM.Sim.dragonAura) {
+        CM.Sim.dragonAura = aura;
+
+        if (CM.Sim.Objects[CM.Cache.HighestBuilding].amount >= 0) {
+            CM.Sim.Objects[CM.Cache.HighestBuilding].amount -= 1;
+        }
+    }
+	CM.Sim.CalculateGains();
+}
+
+CM.Sim.ChangeAura2 = function(aura) {
+    // Changing to the current aura costs nothing and does nothing
+    if (aura != CM.Sim.dragonAura2) {
+        CM.Sim.dragonAura2 = aura;
+
+        if (CM.Sim.Objects[CM.Cache.HighestBuilding].amount >= 0) {
+            CM.Sim.Objects[CM.Cache.HighestBuilding].amount -= 1;
+        }
+    }
+	CM.Sim.CalculateGains();
+}
+
+CM.Sim.CalculateAuras = function() {
+    CM.Cache.Auras = [];
+    CM.Cache.Auras2 = [];
+    
+    var origAura = CM.Sim.dragonAura;
+    var origAura2 = CM.Sim.dragonAura2;
+    CM.Sim.CalculateHighest();
+    for (var i in Game.dragonAuras) {
+        CM.Sim.CopyData();
+        
+        var startAmount = CM.Sim.Objects[CM.Cache.HighestBuilding];
+        
+        CM.Sim.ChangeAura(i);
+        CM.Cache.Auras[i] = CM.Sim.cookiesPs - Game.cookiesPs;
+        CM.Sim.dragonAura = origAura;
+        
+        if (CM.Sim.Objects[CM.Cache.HighestBuilding].amount != startAmount) {
+            CM.Sim.Objects[CM.Cache.HighestBuilding].amount += 1;
+        }
+        
+        CM.Sim.ChangeAura2(i);
+        CM.Cache.Auras2[i] = CM.Sim.cookiesPs - Game.cookiesPs;
+        CM.Sim.dragonAura2 = origAura2;
+    }
+    
+    CM.Cache.MinAura = null;
+    CM.Cache.MaxAura = null;
+    for (var i in CM.Cache.Auras) {
+        var delta = CM.Cache.Auras[i];
+        if (CM.Cache.MinAura == null || delta < CM.Cache.MinAura) {
+            CM.Cache.MinAura = delta;
+        }
+        if (CM.Cache.MaxAura == null || delta > CM.Cache.MaxAura) {
+            CM.Cache.MaxAura = delta;
+        }
+    }
+    
+    CM.Cache.MinAura2 = 0;
+    CM.Cache.MaxAura2 = 0;
+    for (var i in CM.Cache.Auras2) {
+        var delta = CM.Cache.Auras2[i];
+        if (CM.Cache.MinAura2 == null || delta < CM.Cache.MinAura2) {
+            CM.Cache.MinAura2 = delta;
+        }
+        if (CM.Cache.MaxAura2 == null || CM.Cache.Auras2[i] > CM.Cache.MaxAura2) {
+            CM.Cache.MaxAura2 = delta;
+        }
+    }
 }
 
 CM.Sim.NoGoldSwitchCookiesPS = function() {

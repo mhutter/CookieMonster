@@ -528,6 +528,90 @@ CM.Sim.BuyUpgrades = function() {
 	}
 }
 
+CM.Sim.CalculateHighest = function() {
+    var highest = -1;
+    for (var i in CM.Sim.Objects) {
+        if (CM.Sim.Objects[i].amount > 0) {
+            highest = i;
+        }
+    }
+    CM.Cache.HighestBuilding = highest;
+}
+
+CM.Sim.ChangeAura = function(aura) {
+    // Changing to the current aura costs nothing and does nothing
+    if (aura != CM.Sim.dragonAura) {
+        CM.Sim.dragonAura = aura;
+
+        if (CM.Sim.Objects[CM.Cache.HighestBuilding].amount >= 0) {
+            CM.Sim.Objects[CM.Cache.HighestBuilding].amount -= 1;
+        }
+    }
+	CM.Sim.CalculateGains();
+}
+
+CM.Sim.ChangeAura2 = function(aura) {
+    // Changing to the current aura costs nothing and does nothing
+    if (aura != CM.Sim.dragonAura2) {
+        CM.Sim.dragonAura2 = aura;
+
+        if (CM.Sim.Objects[CM.Cache.HighestBuilding].amount >= 0) {
+            CM.Sim.Objects[CM.Cache.HighestBuilding].amount -= 1;
+        }
+    }
+	CM.Sim.CalculateGains();
+}
+
+CM.Sim.CalculateAuras = function() {
+    CM.Cache.Auras = [];
+    CM.Cache.Auras2 = [];
+    
+    var origAura = CM.Sim.dragonAura;
+    var origAura2 = CM.Sim.dragonAura2;
+    CM.Sim.CalculateHighest();
+    for (var i in Game.dragonAuras) {
+        CM.Sim.CopyData();
+        
+        var startAmount = CM.Sim.Objects[CM.Cache.HighestBuilding];
+        
+        CM.Sim.ChangeAura(i);
+        CM.Cache.Auras[i] = CM.Sim.cookiesPs - Game.cookiesPs;
+        CM.Sim.dragonAura = origAura;
+        
+        if (CM.Sim.Objects[CM.Cache.HighestBuilding].amount != startAmount) {
+            CM.Sim.Objects[CM.Cache.HighestBuilding].amount += 1;
+        }
+        
+        CM.Sim.ChangeAura2(i);
+        CM.Cache.Auras2[i] = CM.Sim.cookiesPs - Game.cookiesPs;
+        CM.Sim.dragonAura2 = origAura2;
+    }
+    
+    CM.Cache.MinAura = null;
+    CM.Cache.MaxAura = null;
+    for (var i in CM.Cache.Auras) {
+        var delta = CM.Cache.Auras[i];
+        if (CM.Cache.MinAura == null || delta < CM.Cache.MinAura) {
+            CM.Cache.MinAura = delta;
+        }
+        if (CM.Cache.MaxAura == null || delta > CM.Cache.MaxAura) {
+            CM.Cache.MaxAura = delta;
+        }
+    }
+    
+    CM.Cache.MinAura2 = 0;
+    CM.Cache.MaxAura2 = 0;
+    for (var i in CM.Cache.Auras2) {
+        var delta = CM.Cache.Auras2[i];
+        if (CM.Cache.MinAura2 == null || delta < CM.Cache.MinAura2) {
+            CM.Cache.MinAura2 = delta;
+        }
+        if (CM.Cache.MaxAura2 == null || CM.Cache.Auras2[i] > CM.Cache.MaxAura2) {
+            CM.Cache.MaxAura2 = delta;
+        }
+    }
+}
+
 CM.Sim.NoGoldSwitchCookiesPS = function() {
 	if (Game.Has('Golden switch [off]')) {
 		CM.Sim.CopyData();

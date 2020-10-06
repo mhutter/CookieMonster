@@ -2061,6 +2061,71 @@ CM.Disp.RefreshScale = function() {
 	CM.Disp.UpdateUpgrades();
 }
 
+CM.Disp.GetAuraColor = function(aura) {
+    var borderColor = CM.Disp.colorGray;
+    
+    var delta = CM.Cache.Auras[aura];
+    
+    if (!CM.Data.CalculableAuras.includes(Game.dragonAuras[aura].name)) {
+        borderColor = CM.Disp.colorGray;
+    } else if (delta == CM.Cache.MaxAura) {
+        borderColor = CM.Disp.colorBlue;
+    } else if (delta == CM.Cache.MinAura) {
+        borderColor = CM.Disp.colorPurple;
+    } else if (delta > 0) {
+        borderColor = CM.Disp.colorGreen;
+    } else if (delta < 0) {
+        borderColor = CM.Disp.colorRed;
+    }
+    
+    return borderColor;
+}
+
+CM.Disp.CreateAuraInfo = function(aura) {
+    var auraInfo = document.createElement("div");
+    auraInfo.id = "CMAuraInfo";
+
+    var auraBorder = document.createElement("div");
+    auraBorder.style.border = "1px solid";
+    auraBorder.style.padding = "4px";
+    auraBorder.style.margin = "6px";
+    auraBorder.id = "CMAuraBorder";
+    auraBorder.className = CM.Disp.colorTextPre + CM.Disp.GetAuraColor(aura);
+	auraInfo.appendChild(auraBorder);
+	
+	var changeTitle = document.createElement("div");
+	changeTitle.style.fontWeight = "bold";
+	changeTitle.className = "CMTextBlue";
+	changeTitle.innerText = "Change in Income";
+	auraBorder.appendChild(changeTitle);
+	
+	var changeValue = document.createElement("div");
+	changeValue.id = "CMAuraIncome";
+	changeValue.innerText = Beautify(CM.Cache.Auras[aura]);
+	auraBorder.appendChild(changeValue);
+	
+	return auraInfo;
+}
+
+CM.Disp.DescribeDragonAura = function(aura) {
+    CM.Sim.CalculateAuras();
+	var auraInfo = l("dragonAuraInfo");
+	auraInfo.firstElementChild.appendChild(CM.Disp.CreateAuraInfo(aura));
+	
+	var auraList = auraInfo.nextElementSibling;
+    for (var i in auraList.children) {
+        var crate = auraList.children[i];
+        if (crate && crate.children && crate.children.length == 0) {
+            var colorDiv = document.createElement("div");
+            colorDiv.className = CM.Disp.colorBackPre + CM.Disp.GetAuraColor(i);
+            colorDiv.style.height = "10px";
+            colorDiv.style.width = "10px";
+
+            auraList.children[i].appendChild(colorDiv);
+        }
+    }
+}
+
 CM.Disp.colorTextPre = 'CMText';
 CM.Disp.colorBackPre = 'CMBack';
 CM.Disp.colorBorderPre = 'CMBorder';
