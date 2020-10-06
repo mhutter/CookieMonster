@@ -141,4 +141,9 @@ All suggestions are welcome, even the smallest ones.
 * **[Alhifar](https://github.com/Alhifar)**: Missed Golden Cookie Stat
 * **[BlackenedGem](https://github.com/BlackenedGem)**: Golden/Wrath Cookie Favicons
 * **[Sandworm](https://github.com/svschouw)**: Modified PP calculation
+* **[CraftSpider](https://github.com/CraftSpider)**: Krumblor Aura Calculations
+* **[BONNe](https://github.com/BONNe)**: Missing Garden Seeds Implementation
 * **[Aktanusa](https://github.com/Aktanusa)**: Current maintainer
+* Various Fixes:
+  * [AndyBish](https://github.com/AndyBish)
+  * [InSimpleTermsJordan](https://github.com/InSimpleTermsJordan)
