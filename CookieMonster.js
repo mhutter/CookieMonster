@@ -7,7 +7,6 @@ CM = {};
 CM.Backup = {};
 
 CM.Cache = {};
-
 CM.Config = {};
 
 CM.ConfigData = {};
